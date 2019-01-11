@@ -23,7 +23,6 @@ std::vector<int64_t> find_wnaf(const size_t window_size, const bigint<n> &scalar
     std::vector<int64_t> res(length+1);
     bigint<n> c = scalar;
     int64_t j = 0;
-
     while (!c.is_zero())
     {
         int64_t u;
