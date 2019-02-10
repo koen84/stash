@@ -928,7 +928,7 @@ QString getThemeName()
     if(!theme.isEmpty()){
         return theme;
     }
-    return QString("drkblue");  
+    return QString("trad");  
 }
 
 // Open CSS when configured
@@ -943,8 +943,8 @@ QString loadStyleSheet()
         cssName = QString(":/css/") + theme; 
     }
     else {
-        cssName = QString(":/css/drkblue");  
-        settings.setValue("theme", "drkblue");
+        cssName = QString(":/css/trad");  
+        settings.setValue("theme", "trad");
     }
     
     QFile qFile(cssName);      
