@@ -2,19 +2,16 @@
 
 set -eu
 
-if [ -z "$1" ]; then
+if [ -z "$@" ]; then
     home_dir=$HOME
 else
     home_dir=$1
-
 fi
 
-PARAMS_DIR="$home_dir"
-
 if [[ "$OSTYPE" == "darwin"* ]]; then
-    PARAMS_DIR="$HOME/Library/Application Support/ZcashParams"
+    PARAMS_DIR="$home_dir/Library/Application Support/ZcashParams"
 else
-    PARAMS_DIR="$HOME/.zcash-params"
+    PARAMS_DIR="$home_dir/.zcash-params"
 fi
 
 SPROUT_PKEY_NAME='sprout-proving.key'
@@ -84,14 +81,12 @@ function fetch_curl {
 
     cat <<EOF
 
-Retrieving (curl): $SPROUT_URL/$filename
+Downloading: $filename...
 EOF
-
-    curl \
-        --output "$dlname" \
+ curl \
+        --output "$dlname" --progress-bar \
         -# -L -C - \
         "$SPROUT_URL/$filename"
-
 }
 
 function fetch_failure {
@@ -166,14 +161,10 @@ function main() {
 
     lock fetch-params.sh \
     || exit_locked_error
-
+    clear || true > dev/null
     cat <<EOF
-Zcash - fetch-params.sh
+Stash is downloading additional files (about 1.7GB)...please wait
 
-This script will fetch the Zcash zkSNARK parameters and verify their
-integrity with sha256sum.
-
-If they already exist locally, it will exit now and do nothing else.
 EOF
 
     # Now create PARAMS_DIR and insert a README if necessary:
@@ -188,19 +179,6 @@ large and may be shared across multiple distinct -datadir's such as when
 setting up test networks.
 EOF
 
-        # This may be the first time the user's run this script, so give
-        # them some info, especially about bandwidth usage:
-        cat <<EOF
-The complete parameters are currently just under 1.7GB in size, so plan 
-accordingly for your bandwidth constraints. If the Sprout parameters are
-already present the additional Sapling parameters required are just under 
-800MB in size. If the files are already present and have the correct 
-sha256sum, no networking is used.
-
-Creating params directory. For details about this directory, see:
-$README_PATH
-
-EOF
     fi
 
     cd "$PARAMS_DIR"
@@ -217,4 +195,7 @@ EOF
 
 main
 rm -f /tmp/fetch_params.lock
+cat <<EOF
+Download complete.
+EOF
 exit 0
