@@ -178,11 +178,10 @@ public:
         consensus.vDeployments[Consensus::DEPLOYMENT_CSV].nTimeout = 1517788800; // Feb 5th, 2018
 
        // The best chain should have at least this much work.
-        //consensus.nMinimumChainWork = uint256S("0x00000000000000000000000000000000000000000000081021b74f9f47bbd7bc"); // 888900
-        consensus.nMinimumChainWork = uint256S("0x000000000000000000000000000000000000000000000000000000000000000");
+        consensus.nMinimumChainWork = uint256S("0000000000000000000000000000000000000000000000000000002abfa9292c"); // 15410
 
         // By default assume that the signatures in ancestors of this block are valid.
-        consensus.defaultAssumeValid = uint256S("0x000000ee06448a3d3c624176d358f2b35636f1cb96bd097a06178cf072e92784"); // 888900
+        consensus.defaultAssumeValid = uint256S("00000080f983cacf8dfa603adcff8593204a3650e497e2070a8c8efeae2fc777"); // 888900
 
         /**
          * The message start string is designed to be unlikely to occur in normal data.
@@ -250,21 +249,16 @@ public:
         nPoolMaxTransactions = 3;
         nFulfilledRequestExpireTime = 60*60; // fulfilled requests expire in 1 hour
 
-        
         strSporkAddress = "Xmvo2yTcJK96QDsJ4xEzNZsSiQgowuw1wW";
 
         checkpointData = (Checkpoints::CCheckpointData) {
             boost::assign::map_list_of
-            (  0, uint256S("0x000000ee06448a3d3c624176d358f2b35636f1cb96bd097a06178cf072e92784")),
-            0,//1507424630, // * UNIX timestamp of last checkpoint block
-            0,//3701128,    // * total number of transactions between genesis and last checkpoint
-                        //   (the tx=... number in the SetBestChain debug.log lines)
-            0//5000        // * estimated number of transactions per day after checkpoint
+            (  15410, uint256S("00000080f983cacf8dfa603adcff8593204a3650e497e2070a8c8efeae2fc777"))
         };
 
         chainTxData = ChainTxData{
-            0, // * UNIX timestamp of last known number of transactions
-            0,    // * total number of transactions between genesis and that timestamp
+            1552263166, // * UNIX timestamp of last known number of transactions
+            22519,    // * total number of transactions between genesis and that timestamp
                         //   (the tx=... number in the SetBestChain debug.log lines)
             0.1         // * estimated number of transactions per second after that timestamp
         };
@@ -304,7 +298,7 @@ static CMainParams mainParams;
  */
 class CTestNetParams : public CChainParams {
 public:
-    CTestNetParams() {
+   CTestNetParams() {
         strNetworkID = "test";
         consensus.nSubsidyHalvingInterval = 525960;
         consensus.nMasternodePaymentsStartBlock = 1000; // not true, but it's ok as long as it's less then nMasternodePaymentsIncreaseBlock
@@ -343,11 +337,10 @@ public:
         consensus.vDeployments[Consensus::DEPLOYMENT_CSV].nTimeout = 1538092800; // September 28th, 2018
 
         // The best chain should have at least this much work.
-        consensus.nMinimumChainWork = uint256S("0x0"); // 37900
-        // consensus.nMinimumChainWork = uint256S("0x000000000000000000000000000000000000000000000000003be69c34b1244f"); // 143200
+        consensus.nMinimumChainWork = uint256S("000000000000000000000000000000000000000000000000000000124b56ecc7"); // 20000
 
         // By default assume that the signatures in ancestors of this block are valid.
-        consensus.defaultAssumeValid = uint256S("0x000001132a8c3bdb334f682ab11a9fdf49fed1a593f0833aa4f7ff3b5ad091b9"); // 0
+        consensus.defaultAssumeValid = uint256S("0000024ae76f721c26db19b9f50b61e6b5803d2086abb80c95dd05efeaf123a7"); // 20000
 
         pchMessageStart[0] = 0xef;
         pchMessageStart[1] = 0xa2;
@@ -361,14 +354,14 @@ public:
         //nDelayGetHeadersTime = 0; // DTG 24 * 60 * 60;
         nPruneAfterHeight = 1000;
 
-        genesis = CreateGenesisBlock(1545016533, 498287, 0x1e0ffff0, 1, 50 * COIN);
+        genesis = CreateGenesisBlock(1550820822, 302758, 0x1e0ffff0, 1, 50 * COIN);
 
         if (genesis.nNonce == 0) {
           GenerateGenesisHash(genesis, strNetworkID);
         }
 
         consensus.hashGenesisBlock = genesis.GetHash();
-        assert(consensus.hashGenesisBlock == uint256S("0x000001132a8c3bdb334f682ab11a9fdf49fed1a593f0833aa4f7ff3b5ad091b9"));
+        assert(consensus.hashGenesisBlock == uint256S("0x0000098bec97458a8b345102a4cc54233e5a8717aa23ebe3395af1c26ad1ad7a"));
         assert(genesis.hashMerkleRoot == uint256S("0x965e2a3e499686a80cc1f990a5b18687cf766a892e8ec37b32de99609eaf5ca3"));
 
         vFixedSeeds.clear();
@@ -412,20 +405,21 @@ public:
         nPoolMaxTransactions = 3;
         nFulfilledRequestExpireTime = 5*60; // fulfilled requests expire in 5 minutes
 
-        strSporkAddress = "yV3p8PphQoZNpo7CEXAesrbf6fgCCJ8FPt";
+        // place this key in .conf file as sporkkey=cP4EKFyJsHT39LDqgdcB43Y3YXjNyjb5Fuas1GQSeAtjnZWmZEQK
+        // privKey: cP4EKFyJsHT39LDqgdcB43Y3YXjNyjb5Fuas1GQSeAtjnZWmZEQK
+        // open debug console and use this command:
+        // spork SPORK_NAME [value]
+
+        strSporkAddress = "yj949n1UH6fDhw6HtVE5VMj2iSTaSWBMcW"; // MPB todo - update with real key
 
         checkpointData = (Checkpoints::CCheckpointData) {
             boost::assign::map_list_of
-            (0, uint256S("0x000001132a8c3bdb334f682ab11a9fdf49fed1a593f0833aa4f7ff3b5ad091b9")),
-            1545016533, // * UNIX timestamp of last checkpoint block
-            0,       // * total number of transactions between genesis and last checkpoint
-                        //   (the tx=... number in the SetBestChain debug.log lines)
-            0         // * estimated number of transactions per day after checkpoint
+            (20000, uint256S("0000024ae76f721c26db19b9f50b61e6b5803d2086abb80c95dd05efeaf123a7"))           
         };
 
         chainTxData = ChainTxData{
-            0,// * UNIX timestamp of last known number of transactions
-            0,        // * total number of transactions between genesis and that timestamp
+            1552185691,// * UNIX timestamp of last known number of transactions
+            1336,        // * total number of transactions between genesis and that timestamp
                         //   (the tx=... number in the SetBestChain debug.log lines)
             0.006       // * estimated number of transactions per second after that timestamp
         };
@@ -433,10 +427,10 @@ public:
         vHashLegacyBlocks = {
 //------------------------------------------------------------------------------
 // Do not edit manually
-        "0007297ceb034981af9f58bbbe826a9138766c1d67fcd06bf29bb8fea797b0b1",
-        "0002831a8490b3bb9743db653abd97795eb81adb6fb9e4fba80707298392ad3d",
-        "00053fcc0186448911cb65a4a6814ee61178a417f2cbb6ec04f36229379f53c6",
-        "000dfd446685cad397cd9652001621572a78c0a2b7d5bbf1c19c9b3a04d004d2",
+        "000ed989820e114ca98139a0c024cefcb3e9b2027461690350b9acd6cc84b3c3",
+        "000d8d61aa97c57809aee2ff7681c59a4ac151318caa07ee64ac8d0a963d508a",
+        "0007294df450fe096a65b773d4974095d5ad09642123ba610dcfb1a3177ca2af",
+        "000bd583c7a232ac55ad78151cc4f2b27776a9e689a2d55c6a1282bcb4ba497a",
 //------------------------------------------------------------------------------
         };
     }
