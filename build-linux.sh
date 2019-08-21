@@ -7,21 +7,65 @@ ubuntu="18.04"
 debian="10"
 
 # gather system information
-distro=$(cat /etc/os-release | grep ^ID= | sed -e "s/^ID=//" | sed -e 's/"//g' | sed -e "s/'//g")
-distrov=$(cat /etc/os-release | grep ^VERSION_ID= | sed -e "s/^VERSION_ID=//" | sed -e 's/"//g' | sed -e "s/'//g")
+if [ -f "/etc/os-release" ]; then
+	distro=$(cat /etc/os-release | grep ^ID= | sed -e "s/^ID=//" | sed -e 's/"//g' | sed -e "s/'//g")
+	distrov=$(cat /etc/os-release | grep ^VERSION_ID= | sed -e "s/^VERSION_ID=//" | sed -e 's/"//g' | sed -e "s/'//g")
+elif [ -f "/etc/system-release" ]; then
+	distro=$(cat /etc/system-release | awk '{print tolower($1)}')
+	distrov=$(cat /etc/system-release | awk '{print $3}')
+fi
 
 echo "Running on $distro $distrov"
 
-# function to install necessary packages with yum
+if [ $(id -u) == 0 ]; then
+	_sudo=""
+else
+	_sudo="sudo"
+fi
+
+# function to install necessary packages with yum, after verifying root privileges
 with_yum(){
-        echo "Installing dependencies using yum."
-	sudo yum -y install gcc gcc-c++ make libtool automake pkgconfig openssl-devel libevent-devel curl bzip2 patch
+	if [ $(id -u) == 0 ] || ( [ -n "$(which sudo)" ] && [ -n "$(groups | grep wheel)" ] ); then
+	        echo "Installing dependencies using yum."
+		$_sudo yum -y install gcc gcc-c++ make libtool automake pkgconfig openssl-devel libevent-devel curl bzip2 patch
+	else
+		echo -e "ERROR : script must be run as root.  Otherwise install sudo and have sudo rights on your account.\nHINT : yum install sudo"
+		exit 1
+	fi
 }
 
-# function to install necessary packages with apt-get
+# function to install necessary packages with apt-get, after verifying root privileges
 with_apt(){
-        echo "Installing dependencies using apt-get."
-	sudo apt-get -y install build-essential libtool autotools-dev automake pkg-config libssl-dev libevent-dev bsdmainutils curl
+	if [ $(id -u) == 0 ] || ( [ -n "$(which sudo)" ] && [ -n "$(groups | grep sudo)" ] ); then
+	        echo "Installing dependencies using apt-get."
+		$_sudo apt-get -y install build-essential libtool autotools-dev automake pkg-config libssl-dev libevent-dev bsdmainutils curl
+	else
+		echo -e "ERROR : script must be run as root.  Otherwise install sudo and have sudo rights on your account.\nHINT : apt-get install sudo"
+		exit 1
+        fi
+}
+
+# function using yum, to fix out of date packages
+# put the files outside of the stash git directory
+yum_outofdate(){
+	cd ..
+	$_sudo curl https://people.centos.org/tru/devtools-2/devtools-2.repo -o /etc/yum.repos.d/devtools-2.repo
+	$_sudo yum -y install git autoconf centos-release-scl devtoolset-2-gcc devtoolset-2-binutils devtoolset-2-gcc-c++
+
+# needs heredoc or otherwise drops into rootshell and halt script
+$_sudo /bin/bash <<EOF
+	scl enable devtoolset-2 bash
+EOF
+
+	curl http://ftp.gnu.org/gnu/autoconf/autoconf-2.69.tar.gz | tar -xz
+	pushd autoconf-2.69
+	./configure
+	make
+	$_sudo make install
+	popd
+	rm -rf autoconf-2.69*
+	cd stash
+	grep -qxF 'm4_pattern_allow(PKG_CONFIG_LIBDIR)' configure.ac || echo 'm4_pattern_allow(PKG_CONFIG_LIBDIR)' >> configure.ac
 }
 
 # logic to select package installer
@@ -29,17 +73,34 @@ with_apt(){
 # allows to select yum or apt when distro is not explicitly supported
 case $distro in
         centos)
-                if [[ "$distrov" != "$centos" ]]; then echo "WARNING : this script has not been tested on version $distrov of $distro.  Continuing to run."; fi
-                with_yum
+#		if [ -z "$distrov" ]; then distrov=$(rpm -E %{rhel}); fi
+
+		case $distrov in
+			6*)
+				with_yum
+				yum_outofdate
+				;;
+			7)
+
+				with_yum
+				;;
+			*)
+				echo "WARNING : this script has not been tested on version $distrov of $distro.  Continuing to run."
+		                with_yum
+				;;
+		esac
                 ;;
+
         ubuntu)
                 if [[ "$distrov" != "$ubuntu" ]]; then echo "WARNING : this script has not been tested on version $distrov of $distro.  Continuing to run."; fi
                 with_apt
                 ;;
+
         debian)
                 if [[ "$distrov" != "$debian" ]]; then echo "WARNING : this script has not been tested on version $distrov of $distro.  Continuing to run."; fi
                 with_apt
                 ;;
+
         *)
                 echo "ERROR : $distro is not supported by this script. To try continue anyway, type yum or apt to use as package manager.  Anything else will abort the script."
                 read installer
@@ -56,6 +117,7 @@ case $distro in
                                 exit
                                 ;;
                 esac
+		;;
 esac
 
 cores=$(nproc)
